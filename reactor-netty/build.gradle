@@ -25,7 +25,7 @@ dependencies {
 
 	compileOnly "io.micrometer:micrometer-core:$micrometerVersion"
 	compileOnly "io.netty:netty-codec-haproxy:$nettyVersion"
-	compileOnly "io.netty:netty-transport-native-kqueue:$nettyVersion"
+	compileOnly "io.netty:netty-transport-classes-kqueue:$nettyVersion"
 	compileOnly "io.netty.incubator:netty-incubator-transport-native-io_uring:$nettyIoUringVersion"
 	compileOnly "io.projectreactor.addons:reactor-pool:$reactorPoolVersion"
 }
