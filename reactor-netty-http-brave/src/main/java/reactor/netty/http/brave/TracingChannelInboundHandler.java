@@ -19,8 +19,8 @@ import brave.Span;
 import brave.propagation.CurrentTraceContext;
 import brave.propagation.CurrentTraceContext.Scope;
 import brave.propagation.TraceContext;
+import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import reactor.netty.Connection;
 import reactor.netty.ConnectionObserver;
 import reactor.netty.NettyPipeline;
@@ -30,12 +30,12 @@ import reactor.netty.http.client.HttpClientResponse;
 import static reactor.netty.http.brave.ReactorNettyHttpTracing.SPAN_ATTR_KEY;
 
 /**
- * {@link io.netty.channel.ChannelInboundHandler} to set the {@link Scope}.
+ * {@link ChannelHandlerAdapter} to set the {@link Scope}.
  *
  * @author Violeta Georgieva
  * @since 1.0.6
  */
-final class TracingChannelInboundHandler extends ChannelInboundHandlerAdapter {
+final class TracingChannelInboundHandler extends ChannelHandlerAdapter {
 	static final String NAME = NettyPipeline.LEFT + "tracingChannelInboundHandler";
 
 	final CurrentTraceContext currentTraceContext;

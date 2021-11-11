@@ -23,8 +23,8 @@ import java.util.function.BiConsumer;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.codec.http.HttpServerCodec;
@@ -66,7 +66,7 @@ class ConnectionTest {
 		decoder = new LineBasedFrameDecoder(12);
 		encoder = new LineBasedFrameDecoder(12);
 		httpTrafficHandlerMock = new ChannelDuplexHandler();
-		reactiveBridgeMock = new ChannelInboundHandlerAdapter();
+		reactiveBridgeMock = new ChannelHandlerAdapter() {};
 		testContext = () -> channel;
 	}
 

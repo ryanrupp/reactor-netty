@@ -15,8 +15,8 @@
  */
 package reactor.netty.incubator.quic;
 
+import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.ssl.SniCompletionEvent;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.incubator.codec.quic.QuicChannel;
@@ -299,7 +299,7 @@ class QuicServerTests extends BaseQuicTests {
 				        .secure(serverSslContext)
 				        .doOnChannelInit((obs, channel, remoteAddress) ->
 				                channel.pipeline()
-				                       .addBefore(NettyPipeline.ReactiveBridge, "test", new ChannelInboundHandlerAdapter() {
+				                       .addBefore(NettyPipeline.ReactiveBridge, "test", new ChannelHandlerAdapter() {
 				                           @Override
 				                           public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
 				                               if (evt instanceof SniCompletionEvent) {

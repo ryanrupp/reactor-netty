@@ -15,6 +15,7 @@
  */
 package reactor.netty.http.client;
 
+import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.unix.DomainSocketAddress;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import java.security.cert.CertificateException;
@@ -29,7 +30,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
@@ -687,7 +687,7 @@ class HttpRedirectTest extends BaseHttpTest {
 		ConnectionProvider provider = ConnectionProvider.create("doTestBuffersForRedirectWithContentShouldBeReleased", 1);
 		final List<Integer> redirectBufferRefCounts = new ArrayList<>();
 		HttpClient.create(provider)
-		          .doOnRequest((r, c) -> c.addHandlerLast("test-buffer-released", new ChannelInboundHandlerAdapter() {
+		          .doOnRequest((r, c) -> c.addHandlerLast("test-buffer-released", new ChannelHandlerAdapter() {
 
 		              @Override
 		              public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {

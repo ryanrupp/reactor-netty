@@ -44,8 +44,8 @@ import java.util.function.Supplier;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.unix.DomainSocketAddress;
@@ -1168,7 +1168,7 @@ public class TcpClientTests {
 				              .option(ChannelOption.valueOf("testBootstrap"), "testBootstrap")
 				              .remoteAddress(server.address())
 				              .resolver(DefaultAddressResolverGroup.INSTANCE)
-				              .handler(new ChannelInboundHandlerAdapter() {
+				              .handler(new ChannelHandlerAdapter() {
 				                  @Override
 				                  public void channelActive(ChannelHandlerContext ctx) throws Exception {
 				                      invoked.set(1);

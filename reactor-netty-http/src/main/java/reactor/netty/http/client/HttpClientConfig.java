@@ -34,7 +34,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -753,7 +752,7 @@ public final class HttpClientConfig extends ClientTransportConfig<HttpClientConf
 		}
 	}
 
-	static final class H2OrHttp11Codec extends ChannelInboundHandlerAdapter {
+	static final class H2OrHttp11Codec extends ChannelHandlerAdapter {
 		final boolean                                    acceptGzip;
 		final HttpResponseDecoderSpec                    decoder;
 		final Http2Settings                              http2Settings;

@@ -17,8 +17,8 @@ package reactor.netty.incubator.quic;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -375,7 +375,7 @@ abstract class QuicTransportConfig<CONF extends TransportConfig> extends Transpo
 	 * io.netty.incubator.codec.quic.QuicheQuicChannel#newChannelPipeline()
 	 * It will register the stream.
 	 */
-	static final class QuicChannelInboundHandler extends ChannelInboundHandlerAdapter {
+	static final class QuicChannelHandlerAdapter extends ChannelHandlerAdapter {
 
 		final ConnectionObserver       listener;
 		final ChannelHandler           loggingHandler;
@@ -383,7 +383,7 @@ abstract class QuicTransportConfig<CONF extends TransportConfig> extends Transpo
 		final ConnectionObserver       streamObserver;
 		final Map<ChannelOption<?>, ?> streamOptions;
 
-		QuicChannelInboundHandler(
+		QuicChannelHandlerAdapter(
 				ConnectionObserver listener,
 				@Nullable ChannelHandler loggingHandler,
 				Map<AttributeKey<?>, ?> streamAttrs,
@@ -445,7 +445,7 @@ abstract class QuicTransportConfig<CONF extends TransportConfig> extends Transpo
 
 			channel.pipeline().remove(NettyPipeline.ReactiveBridge);
 			channel.pipeline().addLast(NettyPipeline.ReactiveBridge,
-					new QuicChannelInboundHandler(observer, loggingHandler, streamAttrs, streamObserver, streamOptions));
+					new QuicChannelHandlerAdapter(observer, loggingHandler, streamAttrs, streamObserver, streamOptions));
 		}
 	}
 

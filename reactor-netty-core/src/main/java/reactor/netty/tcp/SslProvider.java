@@ -33,8 +33,8 @@ import javax.net.ssl.SSLParameters;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
@@ -779,7 +779,7 @@ public final class SslProvider {
 		}
 	}
 
-	static final class SslReadHandler extends ChannelInboundHandlerAdapter {
+	static final class SslReadHandler extends ChannelHandlerAdapter {
 
 		boolean handshakeDone;
 

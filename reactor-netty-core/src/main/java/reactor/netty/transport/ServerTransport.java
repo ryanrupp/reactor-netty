@@ -31,8 +31,8 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelConfig;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -348,7 +348,7 @@ public abstract class ServerTransport<T extends ServerTransport<T, CONF>,
 
 	static final Logger log = Loggers.getLogger(ServerTransport.class);
 
-	static class Acceptor extends ChannelInboundHandlerAdapter {
+	static class Acceptor extends ChannelHandlerAdapter {
 
 		final EventLoopGroup childGroup;
 		final ChannelHandler childHandler;

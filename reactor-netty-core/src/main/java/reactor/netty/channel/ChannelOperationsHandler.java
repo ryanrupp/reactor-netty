@@ -17,8 +17,8 @@ package reactor.netty.channel;
 
 import io.netty.buffer.EmptyByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.DecoderResultProvider;
 import io.netty.util.IllegalReferenceCountException;
@@ -34,12 +34,12 @@ import static reactor.netty.ReactorNetty.format;
 import static reactor.netty.ReactorNetty.toPrettyHexDump;
 
 /**
- * Netty {@link io.netty.channel.ChannelDuplexHandler} implementation that bridge data
+ * Netty {@link ChannelHandlerAdapter} implementation that bridge data
  * via an IPC {@link NettyOutbound}
  *
  * @author Stephane Maldini
  */
-final class ChannelOperationsHandler extends ChannelInboundHandlerAdapter {
+final class ChannelOperationsHandler extends ChannelHandlerAdapter {
 
 	final ConnectionObserver        listener;
 	final ChannelOperations.OnSetup opsFactory;

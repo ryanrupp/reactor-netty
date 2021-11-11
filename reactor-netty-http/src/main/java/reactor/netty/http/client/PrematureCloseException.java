@@ -15,14 +15,14 @@
  */
 package reactor.netty.http.client;
 
-import io.netty.channel.ChannelInboundHandler;
+import io.netty.channel.ChannelHandler;
 import reactor.netty.channel.ChannelOperations;
 
 import java.io.IOException;
 
 /**
  * An error for signalling that the connection was closed prematurely
- * {@link ChannelInboundHandler#channelInactive(io.netty.channel.ChannelHandlerContext)},
+ * {@link ChannelHandler#channelInactive(io.netty.channel.ChannelHandlerContext)},
  * {@link ChannelOperations#onInboundClose()},
  * {@link ChannelOperations#onInboundError()}
  *

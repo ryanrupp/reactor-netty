@@ -50,8 +50,8 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufHolder;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -1046,7 +1046,7 @@ class HttpServerTests extends BaseHttpTest {
 	void testCustomHandlerInvokedBeforeIOHandler() {
 		disposableServer =
 				createServer()
-				          .doOnConnection(c -> c.addHandlerFirst("custom", new ChannelInboundHandlerAdapter() {
+				          .doOnConnection(c -> c.addHandlerFirst("custom", new ChannelHandlerAdapter() {
 				                      @Override
 				                      public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 				                          if (msg instanceof HttpRequest) {
@@ -1932,7 +1932,7 @@ class HttpServerTests extends BaseHttpTest {
 				                              .addSniMapping("*.test.com", domainSpec -> domainSpec.sslContext(testSslContextBuilder)))
 				          .doOnChannelInit((obs, channel, remoteAddress) ->
 				              channel.pipeline()
-				                     .addAfter(NettyPipeline.SslHandler, "test", new ChannelInboundHandlerAdapter() {
+				                     .addAfter(NettyPipeline.SslHandler, "test", new ChannelHandlerAdapter() {
 				                         @Override
 				                         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
 				                             if (evt instanceof SniCompletionEvent) {
@@ -2229,7 +2229,7 @@ class HttpServerTests extends BaseHttpTest {
 		AtomicReference<List<ByteBuf>> replay = new AtomicReference<>(new ArrayList<>());
 		HttpServer server = serverCustomizer.apply(createServer());
 		disposableServer =
-				server.doOnConnection(conn -> conn.addHandlerLast(new ChannelInboundHandlerAdapter() {
+				server.doOnConnection(conn -> conn.addHandlerLast(new ChannelHandlerAdapter() {
 
 				              @Override
 				              public void channelRead(ChannelHandlerContext ctx, Object msg) {

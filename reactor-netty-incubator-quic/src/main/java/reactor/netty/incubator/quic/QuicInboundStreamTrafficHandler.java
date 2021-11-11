@@ -15,8 +15,8 @@
  */
 package reactor.netty.incubator.quic;
 
+import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.ChannelInputShutdownReadComplete;
 import reactor.netty.channel.ChannelOperations;
 import reactor.util.Logger;
@@ -27,7 +27,7 @@ import static reactor.netty.ReactorNetty.format;
 /**
  * @author Violeta Georgieva
  */
-final class QuicInboundStreamTrafficHandler extends ChannelInboundHandlerAdapter {
+final class QuicInboundStreamTrafficHandler extends ChannelHandlerAdapter {
 
 	static final Logger log = Loggers.getLogger(QuicInboundStreamTrafficHandler.class);
 
