@@ -16,9 +16,9 @@
 package reactor.netty.channel;
 
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.channel.ChannelPromise;
+import io.netty.util.concurrent.Future;
 import reactor.util.annotation.Nullable;
 
 import java.net.SocketAddress;
@@ -51,7 +51,7 @@ public class ChannelMetricsHandler extends AbstractChannelMetricsHandler {
 		return recorder;
 	}
 
-	static final class ConnectMetricsHandler extends ChannelOutboundHandlerAdapter {
+	static final class ConnectMetricsHandler extends ChannelHandlerAdapter {
 
 		final ChannelMetricsRecorder recorder;
 
@@ -60,18 +60,16 @@ public class ChannelMetricsHandler extends AbstractChannelMetricsHandler {
 		}
 
 		@Override
-		public void connect(ChannelHandlerContext ctx, SocketAddress remoteAddress,
-				SocketAddress localAddress, ChannelPromise promise) throws Exception {
+		public Future<Void> connect(ChannelHandlerContext ctx, SocketAddress remoteAddress, SocketAddress localAddress) {
 			long connectTimeStart = System.nanoTime();
-			super.connect(ctx, remoteAddress, localAddress, promise);
-			promise.addListener(future -> {
-				ctx.pipeline().remove(this);
-
-				recorder.recordConnectTime(
-						remoteAddress,
-						Duration.ofNanos(System.nanoTime() - connectTimeStart),
-						future.isSuccess() ? SUCCESS : ERROR);
-			});
+			return super.connect(ctx, remoteAddress, localAddress)
+			            .addListener(future -> {
+			                ctx.pipeline().remove(this);
+			                recorder.recordConnectTime(
+			                    remoteAddress,
+			                    Duration.ofNanos(System.nanoTime() - connectTimeStart),
+			                    future.isSuccess() ? SUCCESS : ERROR);
+			            });
 		}
 	}
 }

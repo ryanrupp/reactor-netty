@@ -17,7 +17,6 @@ package reactor.netty;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelOutboundHandler;
 import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.Nullable;
@@ -304,10 +303,6 @@ public interface Connection extends DisposableChannel {
 	/**
 	 * Replace a named handler if present and return this context.
 	 * If handler wasn't present, an {@link RuntimeException} will be thrown.
-	 * <p>
-	 *     Note: if the new handler is of different type, dependent handling like
-	 *     the "extractor" introduced via HTTP-based {@link #addHandler} might not
-	 *     expect/support the new messages type.
 	 *
 	 * @param name handler name
 	 *

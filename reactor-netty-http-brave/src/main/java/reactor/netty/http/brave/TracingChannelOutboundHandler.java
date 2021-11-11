@@ -19,9 +19,9 @@ import brave.Span;
 import brave.propagation.CurrentTraceContext;
 import brave.propagation.CurrentTraceContext.Scope;
 import brave.propagation.TraceContext;
+import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.channel.ChannelPromise;
+import io.netty.util.concurrent.Future;
 import reactor.netty.NettyPipeline;
 import reactor.netty.channel.ChannelOperations;
 import reactor.netty.http.client.HttpClientRequest;
@@ -29,12 +29,12 @@ import reactor.netty.http.client.HttpClientRequest;
 import static reactor.netty.http.brave.ReactorNettyHttpTracing.SPAN_ATTR_KEY;
 
 /**
- * {@link io.netty.channel.ChannelOutboundHandler} to set the {@link Scope}.
+ * {@link ChannelHandlerAdapter} to set the {@link Scope}.
  *
  * @author Violeta Georgieva
  * @since 1.0.6
  */
-final class TracingChannelOutboundHandler extends ChannelOutboundHandlerAdapter {
+final class TracingChannelOutboundHandler extends ChannelHandlerAdapter {
 	static final String NAME = NettyPipeline.RIGHT + "tracingChannelOutboundHandler";
 
 	final CurrentTraceContext currentTraceContext;
@@ -71,14 +71,13 @@ final class TracingChannelOutboundHandler extends ChannelOutboundHandlerAdapter 
 
 	@Override
 	@SuppressWarnings({"FutureReturnValueIgnored", "try"})
-	public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
+	public Future<Void> write(ChannelHandlerContext ctx, Object msg) {
 		Span span = ctx.channel().attr(SPAN_ATTR_KEY).get();
 		if (span != null) {
 			try (Scope scope = currentTraceContext.maybeScope(span.context())) {
 				//"FutureReturnValueIgnored" this is deliberate
-				ctx.write(msg, promise);
+				return ctx.write(msg);
 			}
-			return;
 		}
 		else {
 			ChannelOperations<?, ?> ops = ChannelOperations.get(ctx.channel());
@@ -87,15 +86,14 @@ final class TracingChannelOutboundHandler extends ChannelOutboundHandlerAdapter 
 				if (parent != null) {
 					try (Scope scope = currentTraceContext.maybeScope(parent)) {
 						//"FutureReturnValueIgnored" this is deliberate
-						ctx.write(msg, promise);
+						return ctx.write(msg);
 					}
-					return;
 				}
 			}
 		}
 
 		//"FutureReturnValueIgnored" this is deliberate
-		ctx.write(msg, promise);
+		return ctx.write(msg);
 	}
 
 	@Override
