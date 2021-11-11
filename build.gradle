@@ -175,8 +175,8 @@ subprojects {
 	apply from: "${rootDir}/gradle/javadoc.gradle"
 	apply from: "${rootDir}/gradle/errorprone.gradle"
 
-	sourceCompatibility = '1.8'
-	targetCompatibility = '1.8'
+	sourceCompatibility = '11'
+	targetCompatibility = '11'
 
 	jacoco {
 		toolVersion = '0.8.6'
@@ -214,13 +214,13 @@ subprojects {
 	]
 
 	compileJava {
-		sourceCompatibility = 1.8
-		targetCompatibility = 1.8
+		sourceCompatibility = 11
+		targetCompatibility = 11
 	}
 
 	compileTestJava {
-		sourceCompatibility = 1.8
-		targetCompatibility = 1.8
+		sourceCompatibility = 11
+		targetCompatibility = 11
 	}
 
 	if (JavaVersion.current().isJava8Compatible()) {
