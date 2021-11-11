@@ -90,7 +90,9 @@ dependencies {
 	}
 	else {
 		//classic build to be distributed
-		api "io.netty:netty-transport-native-epoll:$nettyVersion:linux-x86_64"
+		// Temporary remove the transitive dependency to epoll TODO
+		//api "io.netty:netty-transport-native-epoll:$nettyVersion:linux-x86_64"
+		api "io.netty:netty-transport-classes-epoll:$nettyVersion"
 		compileOnly "io.netty:netty-transport-classes-kqueue:$nettyVersion"
 		compileOnly "io.netty.incubator:netty-incubator-transport-native-io_uring:$nettyIoUringVersion"
 		testImplementation "io.netty:netty-transport-classes-kqueue:$nettyVersion"
