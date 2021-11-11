@@ -69,56 +69,6 @@ public interface Connection extends DisposableChannel {
 	}
 
 	/**
-	 * Add a {@link ChannelHandler} with {@link #addHandlerFirst} if of type of
-	 * {@link io.netty.channel.ChannelOutboundHandler} otherwise with
-	 * {@link #addHandlerLast}. Implementation may add more auto handling in particular
-	 * HTTP based context will prepend an HttpContent body extractor.
-	 * <p>
-	 * {@code [ [reactor codecs], [<- user FIRST HANDLERS added here, user LAST HANDLERS added here ->], [reactor handlers] ]}
-	 * <p>
-	 * If effectively added, the handler will be safely removed when the channel is made
-	 * inactive (pool release).
-	 * As the Connection object is available once the channel is in active state, events prior this state
-	 * will not be available (i.e. {@code channelRegistered}, {@code initChannel}, {@code channelActive}, etc.)
-	 *
-	 * @param handler handler instance
-	 *
-	 * @return this Connection
-
-	 */
-	default Connection addHandler(ChannelHandler handler) {
-		return addHandler(handler.getClass().getSimpleName(), handler);
-	}
-
-	/**
-	 * Add a {@link ChannelHandler} with {@link #addHandlerFirst} if of type of
-	 * {@link io.netty.channel.ChannelOutboundHandler} otherwise with
-	 * {@link #addHandlerLast}. Implementation may add more auto handling in particular
-	 * HTTP based context will prepend an HttpContent body extractor.
-	 * <p>
-	 * {@code [ [reactor codecs], [<- user FIRST HANDLERS added here, user LAST HANDLERS added here ->], [reactor handlers] ]}
-	 * <p>
-	 * If effectively added, the handler will be safely removed when the channel is made
-	 * inactive (pool release).
-	 * As the Connection object is available once the channel is in active state, events prior this state
-	 * will not be available (i.e. {@code channelRegistered}, {@code initChannel}, {@code channelActive}, etc.)
-	 *
-	 * @param name handler name
-	 * @param handler handler instance
-	 *
-	 * @return this Connection
-	 */
-	default Connection addHandler(String name, ChannelHandler handler) {
-		if (handler instanceof ChannelOutboundHandler) {
-			addHandlerFirst(name, handler);
-		}
-		else {
-			addHandlerLast(name, handler);
-		}
-		return this;
-	}
-
-	/**
 	 * Add a {@link ChannelHandler} to the end of the "user" {@link io.netty.channel.ChannelPipeline},
 	 * that is just before the reactor-added handlers (like {@link NettyPipeline#ReactiveBridge}.
 	 * If a handler with a similar name already exists, this operation is skipped.

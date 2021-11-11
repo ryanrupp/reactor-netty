@@ -330,7 +330,7 @@ class HttpServerTests extends BaseHttpTest {
 
 		Flux<String> client = createClient(disposableServer.port())
 		                                .doOnConnected(res ->
-		                                        res.addHandler(new LineBasedFrameDecoder(10)))
+		                                        res.addHandlerLast(new LineBasedFrameDecoder(10)))
 		                                .get()
 		                                .uri("/")
 		                                .responseContent()
