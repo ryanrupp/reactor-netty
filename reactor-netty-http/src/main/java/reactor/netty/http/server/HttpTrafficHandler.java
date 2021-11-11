@@ -23,12 +23,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.DecoderResultProvider;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -45,6 +43,8 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.ReferenceCountUtil;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.FutureContextListener;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 import reactor.netty.Connection;
@@ -64,8 +64,7 @@ import static reactor.netty.ReactorNetty.toPrettyHexDump;
  * Replace {@link io.netty.handler.codec.http.HttpServerKeepAliveHandler} with extra
  * handler management.
  */
-final class HttpTrafficHandler extends ChannelDuplexHandler
-		implements Runnable, ChannelFutureListener {
+final class HttpTrafficHandler extends ChannelHandlerAdapter implements Runnable, FutureContextListener<Channel, Void> {
 
 	static final String MULTIPART_PREFIX = "multipart";
 
@@ -281,7 +280,7 @@ final class HttpTrafficHandler extends ChannelDuplexHandler
 
 	@Override
 	@SuppressWarnings("FutureReturnValueIgnored")
-	public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
+	public Future<Void> write(ChannelHandlerContext ctx, Object msg) {
 		// modify message on way out to add headers if needed
 		if (msg instanceof HttpResponse) {
 			final HttpResponse response = (HttpResponse) msg;
@@ -300,8 +299,7 @@ final class HttpTrafficHandler extends ChannelDuplexHandler
 
 			if (response.status().equals(HttpResponseStatus.CONTINUE)) {
 				//"FutureReturnValueIgnored" this is deliberate
-				ctx.write(msg, promise);
-				return;
+				return ctx.write(msg);
 			}
 		}
 		if (msg instanceof LastHttpContent) {
@@ -311,17 +309,16 @@ final class HttpTrafficHandler extends ChannelDuplexHandler
 									"connection, preparing to close"),
 							pendingResponses);
 				}
-				ctx.write(msg, promise.unvoid())
-				   .addListener(this)
-				   .addListener(ChannelFutureListener.CLOSE);
-				return;
+				return ctx.write(msg)
+				          .addListener(ctx.channel(), this)
+				          .addListener(ChannelFutureListener.CLOSE);
 			}
 
-			ctx.write(msg, promise.unvoid())
-			   .addListener(this);
+			Future<Void> future = ctx.write(msg)
+			                         .addListener(ctx.channel(), this);
 
 			if (!persistentConnection) {
-				return;
+				return future;
 			}
 
 			if (nonInformationalResponse) {
@@ -345,7 +342,7 @@ final class HttpTrafficHandler extends ChannelDuplexHandler
 			else {
 				ctx.read();
 			}
-			return;
+			return future;
 		}
 		if (persistentConnection && pendingResponses == 0) {
 			if (HttpServerOperations.log.isDebugEnabled()) {
@@ -353,11 +350,10 @@ final class HttpTrafficHandler extends ChannelDuplexHandler
 						"since response has been sent already: {}"), toPrettyHexDump(msg));
 			}
 			ReferenceCountUtil.release(msg);
-			promise.setSuccess();
-			return;
+			return ctx.newSucceededFuture();
 		}
 		//"FutureReturnValueIgnored" this is deliberate
-		ctx.write(msg, promise);
+		return ctx.write(msg);
 	}
 
 	@Override
@@ -406,24 +402,24 @@ final class HttpTrafficHandler extends ChannelDuplexHandler
 	}
 
 	@Override
-	public void operationComplete(ChannelFuture future) {
+	public void operationComplete(Channel context, Future<? extends Void> future) {
 		if (!future.isSuccess()) {
 			if (HttpServerOperations.log.isDebugEnabled()) {
-				HttpServerOperations.log.debug(format(future.channel(),
+				HttpServerOperations.log.debug(format(context,
 				        "Sending last HTTP packet was not successful, terminating the channel"),
 				        future.cause());
 			}
 		}
 		else {
 			if (HttpServerOperations.log.isDebugEnabled()) {
-				HttpServerOperations.log.debug(format(future.channel(),
+				HttpServerOperations.log.debug(format(context,
 				        "Last HTTP packet was sent, terminating the channel"));
 			}
 		}
 
-		IdleTimeoutHandler.addIdleTimeoutHandler(future.channel().pipeline(), idleTimeout);
+		IdleTimeoutHandler.addIdleTimeoutHandler(context.pipeline(), idleTimeout);
 
-		HttpServerOperations.cleanHandlerTerminate(future.channel());
+		HttpServerOperations.cleanHandlerTerminate(context);
 	}
 
 	@Override

@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
@@ -61,11 +60,11 @@ class ConnectionTest {
 
 	@BeforeEach
 	void init() {
-		anotherRight = new ChannelDuplexHandler();
+		anotherRight = new ChannelHandlerAdapter() {};
 		channel = new EmbeddedChannel();
 		decoder = new LineBasedFrameDecoder(12);
 		encoder = new LineBasedFrameDecoder(12);
-		httpTrafficHandlerMock = new ChannelDuplexHandler();
+		httpTrafficHandlerMock = new ChannelHandlerAdapter() {};
 		reactiveBridgeMock = new ChannelHandlerAdapter() {};
 		testContext = () -> channel;
 	}
