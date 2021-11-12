@@ -24,6 +24,7 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListeners;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -311,7 +312,7 @@ final class HttpTrafficHandler extends ChannelHandlerAdapter implements Runnable
 				}
 				return ctx.write(msg)
 				          .addListener(ctx.channel(), this)
-				          .addListener(ChannelFutureListener.CLOSE);
+				          .addListener(ctx, ChannelFutureListeners.CLOSE);
 			}
 
 			Future<Void> future = ctx.write(msg)

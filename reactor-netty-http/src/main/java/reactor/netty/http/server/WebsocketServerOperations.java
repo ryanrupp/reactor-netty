@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelFutureListeners;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
@@ -230,7 +230,7 @@ final class WebsocketServerOperations extends HttpServerOperations
 					// FAIL_ZERO_SUBSCRIBER
 					onCloseState.tryEmitValue(new WebSocketCloseStatus(frame.statusCode(), frame.reasonText()));
 					return channel().writeAndFlush(frame)
-					                .addListener(ChannelFutureListener.CLOSE);
+					                .addListener(channel(), ChannelFutureListeners.CLOSE);
 				}
 				frame.release();
 				return channel().newSucceededFuture();

@@ -34,7 +34,7 @@ import java.util.function.Function;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelFutureListeners;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DefaultHeaders;
 import io.netty.handler.codec.TooLongFrameException;
@@ -744,7 +744,7 @@ class HttpServerOperations extends HttpOperations<HttpServerRequest, HttpServerR
 		        .setInt(HttpHeaderNames.CONTENT_LENGTH, 0)
 		        .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
 		ctx.writeAndFlush(response)
-		   .addListener(ChannelFutureListener.CLOSE);
+		   .addListener(ctx, ChannelFutureListeners.CLOSE);
 
 		HttpRequest request = null;
 		if (msg instanceof HttpRequest) {
@@ -773,14 +773,14 @@ class HttpServerOperations extends HttpOperations<HttpServerRequest, HttpServerR
 			nettyResponse.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
 			responseHeaders.set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
 			channel().writeAndFlush(newFullBodyMessage(EMPTY_BUFFER))
-			         .addListener(ChannelFutureListener.CLOSE);
+			         .addListener(channel(), ChannelFutureListeners.CLOSE);
 			return;
 		}
 
 		markSentBody();
 		log.error(format(channel(), "Error finishing response. Closing connection"), err);
 		channel().writeAndFlush(EMPTY_BUFFER)
-		         .addListener(ChannelFutureListener.CLOSE);
+		         .addListener(channel(), ChannelFutureListeners.CLOSE);
 	}
 
 	@Override
