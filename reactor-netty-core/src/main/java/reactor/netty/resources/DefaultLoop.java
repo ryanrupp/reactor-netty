@@ -18,7 +18,9 @@ package reactor.netty.resources;
 import java.util.concurrent.ThreadFactory;
 
 import io.netty.channel.Channel;
+import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.ServerChannel;
 
 /**
  * An {@link EventLoopGroup} with associated {@link io.netty.channel.Channel} factory.
@@ -27,11 +29,12 @@ import io.netty.channel.EventLoopGroup;
  */
 interface DefaultLoop {
 
-	<CHANNEL extends Channel> CHANNEL getChannel(Class<CHANNEL> channelClass);
-
-	<CHANNEL extends Channel> Class<? extends CHANNEL> getChannelClass(Class<CHANNEL> channelClass);
+	<CHANNEL extends Channel> CHANNEL getChannel(Class<CHANNEL> channelClass, EventLoop eventLoop);
 
 	String getName();
+
+	<CHANNEL extends ServerChannel> CHANNEL getServerChannel(Class<? extends Channel> channelClass, EventLoop eventLoop,
+			EventLoopGroup childEventLoopGroup);
 
 	EventLoopGroup newEventLoopGroup(int threads, ThreadFactory factory);
 

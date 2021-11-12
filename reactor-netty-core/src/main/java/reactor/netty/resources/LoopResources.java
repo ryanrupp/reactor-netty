@@ -19,7 +19,9 @@ import java.time.Duration;
 import java.util.Objects;
 
 import io.netty.channel.Channel;
+import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.ServerChannel;
 import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import reactor.netty.ReactorNetty;
@@ -201,34 +203,17 @@ public interface LoopResources extends Disposable {
 	 * Callback for a {@link Channel} selection.
 	 *
 	 * @param channelType the channel type
-	 * @param group the source {@link EventLoopGroup} to assign a loop from
+	 * @param eventLoop the source {@link EventLoop} to assign a loop from
 	 * @param <CHANNEL> the {@link Channel} implementation
 	 * @return a {@link Channel} instance
 	 */
-	default <CHANNEL extends Channel> CHANNEL onChannel(Class<CHANNEL> channelType, EventLoopGroup group) {
+	default <CHANNEL extends Channel> CHANNEL onChannel(Class<CHANNEL> channelType, EventLoop eventLoop) {
 		DefaultLoop channelFactory =
-				DefaultLoopNativeDetector.INSTANCE.supportGroup(group) ?
+				DefaultLoopNativeDetector.INSTANCE.supportGroup(eventLoop) ?
 						DefaultLoopNativeDetector.INSTANCE :
 						DefaultLoopNativeDetector.NIO;
 
-		return channelFactory.getChannel(channelType);
-	}
-
-	/**
-	 * Callback for a {@link Channel} class selection.
-	 *
-	 * @param channelType the channel type
-	 * @param group the source {@link EventLoopGroup} to assign a loop from
-	 * @param <CHANNEL> the {@link Channel} implementation
-	 * @return a {@link Channel} class
-	 */
-	default <CHANNEL extends Channel> Class<? extends CHANNEL> onChannelClass(Class<CHANNEL> channelType, EventLoopGroup group) {
-		DefaultLoop channelFactory =
-				DefaultLoopNativeDetector.INSTANCE.supportGroup(group) ?
-						DefaultLoopNativeDetector.INSTANCE :
-						DefaultLoopNativeDetector.NIO;
-
-		return channelFactory.getChannelClass(channelType);
+		return channelFactory.getChannel(channelType, eventLoop);
 	}
 
 	/**
@@ -249,6 +234,24 @@ public interface LoopResources extends Disposable {
 	 * @return a new {@link EventLoopGroup}
 	 */
 	EventLoopGroup onServer(boolean useNative);
+
+	/**
+	 * Callback for a {@link Channel} selection.
+	 *
+	 * @param <CHANNEL> the {@link Channel} implementation
+	 * @param channelType the channel type
+	 * @param eventLoop the source {@link EventLoop} to assign a loop from
+	 * @return a {@link Channel} instance
+	 */
+	default <CHANNEL extends ServerChannel> CHANNEL onServerChannel(Class<? extends Channel> channelType, EventLoop eventLoop,
+			EventLoopGroup childEventLoopGroup) {
+		DefaultLoop channelFactory =
+				DefaultLoopNativeDetector.INSTANCE.supportGroup(eventLoop) ?
+						DefaultLoopNativeDetector.INSTANCE :
+						DefaultLoopNativeDetector.NIO;
+
+		return channelFactory.getServerChannel(channelType, eventLoop, childEventLoopGroup);
+	}
 
 	/**
 	 * Callback for server select {@link EventLoopGroup} creation,

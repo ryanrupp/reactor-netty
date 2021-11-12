@@ -31,6 +31,8 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.ServerChannel;
+import io.netty.channel.ServerChannelFactory;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.AttributeKey;
@@ -257,13 +259,12 @@ public abstract class TransportConfig {
 	/**
 	 * Return the {@link ChannelFactory} which is used to create {@link Channel} instances.
 	 *
-	 * @param elg the {@link EventLoopGroup}
 	 * @param isDomainSocket true if {@link io.netty.channel.unix.DomainSocketChannel} or
 	 * {@link io.netty.channel.unix.ServerDomainSocketChannel} is needed, false otherwise
 	 * @return the {@link ChannelFactory} which is used to create {@link Channel} instances.
 	 */
-	protected ChannelFactory<? extends Channel> connectionFactory(EventLoopGroup elg, boolean isDomainSocket) {
-		return () -> loopResources().onChannel(channelType(isDomainSocket), elg);
+	protected ChannelFactory<? extends Channel> connectionFactory(boolean isDomainSocket) {
+		return el -> loopResources().onChannel(channelType(isDomainSocket), el);
 	}
 
 	/**
@@ -323,6 +324,17 @@ public abstract class TransportConfig {
 
 	protected ChannelMetricsRecorder metricsRecorderInternal() {
 		return metricsRecorder;
+	}
+
+	/**
+	 * Return the {@link ServerChannelFactory} which is used to create {@link ServerChannel} instances.
+	 *
+	 * @param isDomainSocket true if {@link io.netty.channel.unix.DomainSocketChannel} or
+	 * {@link io.netty.channel.unix.ServerDomainSocketChannel} is needed, false otherwise
+	 * @return the {@link ServerChannelFactory} which is used to create {@link ServerChannel} instances.
+	 */
+	protected ServerChannelFactory<? extends ServerChannel> serverConnectionFactory(boolean isDomainSocket) {
+		return (el, celg) -> loopResources().onServerChannel(channelType(isDomainSocket), el, celg);
 	}
 
 	/**

@@ -19,9 +19,11 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.MultithreadEventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.kqueue.KQueue;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.nio.NioHandler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
@@ -122,7 +124,7 @@ class DefaultLoopResourcesTest {
 	private void testClientTransportWarmup(boolean preferNative) throws Exception {
 		final DefaultLoopResources loop1 =
 				(DefaultLoopResources) LoopResources.create("testClientTransportWarmup", 1, true);
-		final NioEventLoopGroup loop2 = new NioEventLoopGroup(1);
+		final EventLoopGroup loop2 = new MultithreadEventLoopGroup(1, NioHandler.newFactory());
 		try {
 			TcpClient tcpClient = TcpClient.create()
 			                               .resolver(spec -> spec.runOn(loop2))

@@ -122,12 +122,12 @@ public final class UdpServerConfig extends TransportConfig {
 	}
 
 	@Override
-	protected ChannelFactory<? extends Channel> connectionFactory(EventLoopGroup elg, boolean isDomainSocket) {
+	protected ChannelFactory<? extends Channel> connectionFactory(boolean isDomainSocket) {
 		if (isPreferNative()) {
-			return super.connectionFactory(elg, isDomainSocket);
+			return super.connectionFactory(isDomainSocket);
 		}
 		else {
-			return () -> new NioDatagramChannel(family());
+			return el -> new NioDatagramChannel(el, family());
 		}
 	}
 

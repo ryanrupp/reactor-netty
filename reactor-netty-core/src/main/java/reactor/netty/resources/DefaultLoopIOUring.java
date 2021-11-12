@@ -16,7 +16,9 @@
 package reactor.netty.resources;
 
 import io.netty.channel.Channel;
+import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.ServerChannel;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
@@ -39,12 +41,9 @@ final class DefaultLoopIOUring implements DefaultLoop {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <CHANNEL extends Channel> CHANNEL getChannel(Class<CHANNEL> channelClass) {
+	public <CHANNEL extends Channel> CHANNEL getChannel(Class<CHANNEL> channelClass, EventLoop eventLoop) {
 		if (channelClass.equals(SocketChannel.class)) {
 			return (CHANNEL) new IOUringSocketChannel();
-		}
-		if (channelClass.equals(ServerSocketChannel.class)) {
-			return (CHANNEL) new IOUringServerSocketChannel();
 		}
 		if (channelClass.equals(DatagramChannel.class)) {
 			return (CHANNEL) new IOUringDatagramChannel();
@@ -53,23 +52,18 @@ final class DefaultLoopIOUring implements DefaultLoop {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public <CHANNEL extends Channel> Class<? extends CHANNEL> getChannelClass(Class<CHANNEL> channelClass) {
-		if (channelClass.equals(SocketChannel.class)) {
-			return (Class<? extends CHANNEL>) IOUringSocketChannel.class;
-		}
-		if (channelClass.equals(ServerSocketChannel.class)) {
-			return (Class<? extends CHANNEL>) IOUringServerSocketChannel.class;
-		}
-		if (channelClass.equals(DatagramChannel.class)) {
-			return (Class<? extends CHANNEL>) IOUringDatagramChannel.class;
-		}
-		throw new IllegalArgumentException("Unsupported channel type: " + channelClass.getSimpleName());
+	public String getName() {
+		return "io_uring";
 	}
 
 	@Override
-	public String getName() {
-		return "io_uring";
+	@SuppressWarnings("unchecked")
+	public <CHANNEL extends ServerChannel> CHANNEL getServerChannel(Class<? extends Channel> channelClass, EventLoop eventLoop,
+			EventLoopGroup childEventLoopGroup) {
+		if (channelClass.equals(ServerSocketChannel.class)) {
+			return (CHANNEL) new IOUringServerSocketChannel();
+		}
+		throw new IllegalArgumentException("Unsupported channel type: " + channelClass.getSimpleName());
 	}
 
 	@Override
