@@ -70,7 +70,7 @@ final class TracingHttpClientDecorator {
 	}
 
 	static void cleanup(Channel channel) {
-		EventLoop eventLoop = channel.eventLoop();
+		EventLoop eventLoop = channel.executor();
 		if (eventLoop.inEventLoop()) {
 			channel.attr(SPAN_ATTR_KEY).set(null);
 		}

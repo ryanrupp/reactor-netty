@@ -279,7 +279,7 @@ final class TracingHttpServerDecorator {
 			                                           null,
 			                                           t -> cleanup(connection.channel()),
 			                                           () -> cleanup(connection.channel()));
-			                               EventLoop eventLoop = conn.channel().eventLoop();
+			                               EventLoop eventLoop = conn.channel().executor();
 			                               if (eventLoop.inEventLoop()) {
 			                                   handler.handleSend(braveResponse, localSpan);
 			                               }
@@ -299,7 +299,7 @@ final class TracingHttpServerDecorator {
 		}
 
 		void cleanup(Channel channel) {
-			EventLoop eventLoop = channel.eventLoop();
+			EventLoop eventLoop = channel.executor();
 			if (eventLoop.inEventLoop()) {
 				channel.attr(REQUEST_ATTR_KEY).set(null);
 				channel.attr(SPAN_ATTR_KEY).set(null);

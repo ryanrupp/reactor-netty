@@ -181,11 +181,11 @@ final class DefaultPooledConnectionProvider extends PooledConnectionProvider<Def
 
 			Channel c = pooledConnection.channel;
 
-			if (c.eventLoop().inEventLoop()) {
+			if (c.executor().inEventLoop()) {
 				run();
 			}
 			else {
-				c.eventLoop().execute(this);
+				c.executor().execute(this);
 			}
 		}
 

@@ -842,13 +842,13 @@ class HttpClientOperations extends HttpOperations<NettyInbound, NettyOutbound>
 			Subscription subscription = Operators.emptySubscription();
 			s.onSubscribe(subscription);
 			if (parent.channel()
-			          .eventLoop()
+			          .executor()
 			          .inEventLoop()) {
 				_subscribe(s);
 			}
 			else {
 				parent.channel()
-				      .eventLoop()
+				      .executor()
 				      .execute(() -> _subscribe(s));
 			}
 		}
