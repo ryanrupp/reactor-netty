@@ -19,8 +19,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.socket.DatagramChannel;
+import io.netty.util.concurrent.Future;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 import reactor.netty.Connection;
@@ -60,7 +60,7 @@ final class UdpOperations extends ChannelOperations<UdpInbound, UdpOutbound>
 			iface = datagramChannel.config().getNetworkInterface();
 		}
 
-		final ChannelFuture future;
+		final Future<Void> future;
 		if (null != iface) {
 			future = datagramChannel.joinGroup(new InetSocketAddress(multicastAddress,
 					datagramChannel.localAddress()
@@ -73,7 +73,7 @@ final class UdpOperations extends ChannelOperations<UdpInbound, UdpOutbound>
 		return FutureMono.from(future)
 		                 .doOnSuccess(v -> {
 		                     if (log.isInfoEnabled()) {
-		                         log.info(format(future.channel(), "JOIN {}"), multicastAddress);
+		                         log.info(format(datagramChannel, "JOIN {}"), multicastAddress);
 		                     }
 		                 });
 	}
@@ -95,7 +95,7 @@ final class UdpOperations extends ChannelOperations<UdpInbound, UdpOutbound>
 			iface = datagramChannel.config().getNetworkInterface();
 		}
 
-		final ChannelFuture future;
+		final Future<Void> future;
 		if (null != iface) {
 			future = datagramChannel.leaveGroup(new InetSocketAddress(multicastAddress,
 					datagramChannel.localAddress()
@@ -108,7 +108,7 @@ final class UdpOperations extends ChannelOperations<UdpInbound, UdpOutbound>
 		return FutureMono.from(future)
 		                 .doOnSuccess(v -> {
 		                     if (log.isInfoEnabled()) {
-		                         log.info(format(future.channel(), "JOIN {}"), multicastAddress);
+		                         log.info(format(datagramChannel, "JOIN {}"), multicastAddress);
 		                     }
 		                 });
 	}

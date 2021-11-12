@@ -29,7 +29,6 @@ import java.util.function.Consumer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelConfig;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
@@ -39,6 +38,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.unix.DomainSocketAddress;
 import io.netty.handler.codec.DecoderException;
 import io.netty.util.AttributeKey;
+import io.netty.util.concurrent.FutureListener;
 import org.reactivestreams.Subscription;
 import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Mono;
@@ -378,7 +378,7 @@ public abstract class ServerTransport<T extends ServerTransport<T, CONF>,
 			TransportConnector.setAttributes(child, childAttrs);
 
 			try {
-				childGroup.register(child).addListener((ChannelFutureListener) future -> {
+				childGroup.register(child).addListener((FutureListener<Void>) future -> {
 					if (!future.isSuccess()) {
 						forceClose(child, future.cause());
 					}

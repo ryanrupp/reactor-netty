@@ -35,7 +35,6 @@ import javax.net.ssl.SSLException;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.DefaultFileRegion;
 import io.netty.channel.FileRegion;
@@ -49,6 +48,7 @@ import io.netty.handler.stream.ChunkedNioFile;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
+import io.netty.util.concurrent.Future;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
@@ -127,7 +127,7 @@ class NettyOutboundTest {
 				return this;
 			}
 		};
-		ChannelFuture f = channel.writeOneOutbound(1);
+		Future<Void> f = channel.writeOneOutbound(1);
 
 		outbound.sendFile(Paths.get(getClass().getResource("/largeFile.txt").toURI()))
 		        .then().block();
@@ -215,7 +215,7 @@ class NettyOutboundTest {
 				return this;
 			}
 		};
-		ChannelFuture f = channel.writeOneOutbound(1);
+		Future<Void> f = channel.writeOneOutbound(1);
 
 		try {
 			outbound.sendFile(Paths.get(getClass().getResource("/largeFile.txt").toURI()))
@@ -308,7 +308,7 @@ class NettyOutboundTest {
 		};
 		Path path = Paths.get(getClass().getResource("/largeFile.txt").toURI());
 
-		ChannelFuture f = channel.writeOneOutbound(1);
+		Future<Void> f = channel.writeOneOutbound(1);
 		outbound.sendFileChunked(path, 0, Files.size(path))
 		        .then().block();
 

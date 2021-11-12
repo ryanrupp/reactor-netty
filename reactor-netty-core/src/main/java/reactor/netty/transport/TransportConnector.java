@@ -17,7 +17,6 @@ package reactor.netty.transport;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFactory;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPromise;
@@ -176,7 +175,7 @@ public final class TransportConnector {
 				log.debug(format(channel, "Connecting to [" + remoteAddress + "]."));
 			}
 
-			ChannelFuture f;
+			Future<Void> f;
 			if (bindAddress == null) {
 				f = channel.connect(remoteAddress);
 			}

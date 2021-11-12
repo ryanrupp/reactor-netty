@@ -36,7 +36,6 @@ import io.netty.buffer.ByteBufHolder;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
@@ -64,6 +63,7 @@ import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketCl
 import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.util.ReferenceCountUtil;
+import io.netty.util.concurrent.Future;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscription;
 import reactor.core.CoreSubscriber;
@@ -885,7 +885,7 @@ class HttpClientOperations extends HttpOperations<NettyInbound, NettyOutbound>
 					HttpUtil.setContentLength(r, encoder.length());
 				}
 
-				ChannelFuture f = parent.channel()
+				Future<Void> f = parent.channel()
 				                        .writeAndFlush(r);
 
 				Flux<Long> tail = encoder.progressSink.asFlux().onBackpressureLatest();

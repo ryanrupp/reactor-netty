@@ -17,12 +17,12 @@ package reactor.netty.incubator.quic;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.incubator.codec.quic.DefaultQuicStreamFrame;
 import io.netty.incubator.codec.quic.QuicStreamChannel;
 import io.netty.incubator.codec.quic.QuicStreamFrame;
 import io.netty.incubator.codec.quic.QuicStreamType;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.FutureListener;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 import reactor.netty.Connection;
@@ -155,9 +155,9 @@ class QuicStreamOperations extends ChannelOperations<QuicInbound, QuicOutbound> 
 		sendFinNow(null);
 	}
 
-	final void sendFinNow(@Nullable ChannelFutureListener listener) {
+	final void sendFinNow(@Nullable FutureListener<Void> listener) {
 		if (markFinSent()) {
-			ChannelFuture f = channel().writeAndFlush(QuicStreamFrame.EMPTY_FIN);
+			Future<Void> f = channel().writeAndFlush(QuicStreamFrame.EMPTY_FIN);
 			if (listener != null) {
 				f.addListener(listener);
 			}

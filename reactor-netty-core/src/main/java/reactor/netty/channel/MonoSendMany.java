@@ -32,8 +32,6 @@ import java.util.stream.Stream;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufHolder;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.DefaultChannelPromise;
@@ -41,6 +39,7 @@ import io.netty.channel.EventLoop;
 import io.netty.util.IllegalReferenceCountException;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.FutureListener;
 import io.netty.util.concurrent.GenericFutureListener;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscription;
@@ -116,7 +115,7 @@ final class MonoSendMany<I, O> extends MonoSend<I, O> implements Scannable {
 
 	static final class SendManyInner<I, O> implements CoreSubscriber<I>, Subscription,
 	                                                  Fuseable, Context, Consumer<I>,
-	                                                  ChannelFutureListener, Runnable, Scannable, ChannelPromise {
+	                                                  FutureListener<Void>, Runnable, Scannable, ChannelPromise {
 
 		final ChannelHandlerContext        ctx;
 		final EventLoop                    eventLoop;
@@ -263,7 +262,7 @@ final class MonoSendMany<I, O> extends MonoSend<I, O> implements Scannable {
 		}
 
 		@Override
-		public void operationComplete(ChannelFuture future) {
+		public void operationComplete(Future<? extends Void> future) {
 			if (Operators.terminate(SUBSCRIPTION, this)) {
 				int wip = wipIncrement(WIP, this);
 				if (wip == 0) {
