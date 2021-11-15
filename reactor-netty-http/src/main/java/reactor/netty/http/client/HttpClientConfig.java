@@ -532,7 +532,6 @@ public final class HttpClientConfig extends ClientTransportConfig<HttpClientConf
 				new HttpClientCodec(
 						decoder.maxInitialLineLength(),
 						decoder.maxHeaderSize(),
-						decoder.maxChunkSize(),
 						decoder.failOnMissingResponse,
 						decoder.validateHeaders(),
 						decoder.initialBufferSize(),
@@ -585,7 +584,6 @@ public final class HttpClientConfig extends ClientTransportConfig<HttpClientConf
 				new HttpClientCodec(
 						decoder.maxInitialLineLength(),
 						decoder.maxHeaderSize(),
-						decoder.maxChunkSize(),
 						decoder.failOnMissingResponse,
 						decoder.validateHeaders(),
 						decoder.initialBufferSize(),
