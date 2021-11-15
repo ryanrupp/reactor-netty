@@ -37,7 +37,8 @@ import java.util.function.Supplier;
 
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.MultithreadEventLoopGroup;
+import io.netty.channel.nio.NioHandler;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.resolver.AddressResolver;
 import io.netty.resolver.AddressResolverGroup;
@@ -134,7 +135,7 @@ class DefaultPooledConnectionProviderTest {
 		final ScheduledExecutorService service = Executors.newScheduledThreadPool(2);
 		int echoServerPort = SocketUtils.findAvailableTcpPort();
 		TcpClientTests.EchoServer echoServer = new TcpClientTests.EchoServer(echoServerPort);
-		EventLoopGroup group = new NioEventLoopGroup(2);
+		EventLoopGroup group = new MultithreadEventLoopGroup(2, NioHandler.newFactory());
 
 		java.util.concurrent.Future<?> f1 = null;
 		java.util.concurrent.Future<?> f2 = null;
@@ -378,7 +379,7 @@ class DefaultPooledConnectionProviderTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	void testRetryConnect() throws Exception {
-		EventLoopGroup group = new NioEventLoopGroup(1);
+		EventLoopGroup group = new MultithreadEventLoopGroup(1, NioHandler.newFactory());
 		InetSocketAddress address = AddressUtils.createUnresolved("localhost", 12122);
 
 		AddressResolverGroup<SocketAddress> resolverGroup = Mockito.mock(AddressResolverGroup.class);
@@ -422,7 +423,7 @@ class DefaultPooledConnectionProviderTest {
 
 	@Test
 	void testDisposeInactivePoolsInBackground() throws Exception {
-		EventLoopGroup group = new NioEventLoopGroup(1);
+		EventLoopGroup group = new MultithreadEventLoopGroup(1, NioHandler.newFactory());
 		InetSocketAddress address = AddressUtils.createUnresolved("example.com", 80);
 		ConnectionProvider.Builder builder =
 				ConnectionProvider.builder("testDisposeInactivePoolsInBackground")
