@@ -26,7 +26,7 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.resolver.AddressResolverGroup;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.util.concurrent.FutureListener;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscription;
 import reactor.core.CoreSubscriber;
@@ -175,7 +175,7 @@ final class Http2ConnectionProvider extends PooledConnectionProvider<Connection>
 	}
 
 	static final class DisposableAcquire
-			implements CoreSubscriber<PooledRef<Connection>>, ConnectionObserver, Disposable, GenericFutureListener<Future<Http2StreamChannel>> {
+			implements CoreSubscriber<PooledRef<Connection>>, ConnectionObserver, Disposable, FutureListener<Http2StreamChannel> {
 		final Disposable.Composite cancellations;
 		final ConnectionObserver obs;
 		final ChannelOperations.OnSetup opsFactory;
@@ -304,7 +304,7 @@ final class Http2ConnectionProvider extends PooledConnectionProvider<Connection>
 		}
 
 		@Override
-		public void operationComplete(Future<Http2StreamChannel> future) {
+		public void operationComplete(Future<? extends Http2StreamChannel> future) throws Exception {
 			Channel channel = pooledRef.poolable().channel();
 			Http2FrameCodec frameCodec = channel.pipeline().get(Http2FrameCodec.class);
 			if (future.isSuccess()) {
