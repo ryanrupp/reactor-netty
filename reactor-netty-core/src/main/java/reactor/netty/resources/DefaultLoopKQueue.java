@@ -20,6 +20,7 @@ import java.util.concurrent.ThreadFactory;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.IoHandlerFactory;
 import io.netty.channel.MultithreadEventLoopGroup;
 import io.netty.channel.ServerChannel;
 import io.netty.channel.kqueue.KQueue;
@@ -84,7 +85,7 @@ final class DefaultLoopKQueue implements DefaultLoop {
 
 	@Override
 	public EventLoopGroup newEventLoopGroup(int threads, ThreadFactory factory) {
-		return new MultithreadEventLoopGroup(threads, factory, KQueueHandler.newFactory());
+		return new KQueueEventLoopGroup(threads, factory, KQueueHandler.newFactory());
 	}
 
 	@Override
@@ -111,6 +112,13 @@ final class DefaultLoopKQueue implements DefaultLoop {
 		kqueue = kqueueCheck;
 		if (log.isDebugEnabled()) {
 			log.debug("Default KQueue support : " + kqueue);
+		}
+	}
+
+	static final class KQueueEventLoopGroup extends MultithreadEventLoopGroup {
+
+		KQueueEventLoopGroup(int nThreads, ThreadFactory threadFactory, IoHandlerFactory ioHandlerFactory) {
+			super(nThreads, threadFactory, ioHandlerFactory);
 		}
 	}
 }

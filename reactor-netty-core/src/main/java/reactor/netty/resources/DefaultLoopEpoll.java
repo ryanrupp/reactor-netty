@@ -20,6 +20,7 @@ import java.util.concurrent.ThreadFactory;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.IoHandlerFactory;
 import io.netty.channel.MultithreadEventLoopGroup;
 import io.netty.channel.ServerChannel;
 import io.netty.channel.epoll.Epoll;
@@ -85,7 +86,7 @@ final class DefaultLoopEpoll implements DefaultLoop {
 
 	@Override
 	public EventLoopGroup newEventLoopGroup(int threads, ThreadFactory factory) {
-		return new MultithreadEventLoopGroup(threads, factory, EpollHandler.newFactory());
+		return new EpollEventLoopGroup(threads, factory, EpollHandler.newFactory());
 	}
 
 	@Override
@@ -112,6 +113,13 @@ final class DefaultLoopEpoll implements DefaultLoop {
 		epoll = epollCheck;
 		if (log.isDebugEnabled()) {
 			log.debug("Default Epoll support : " + epoll);
+		}
+	}
+
+	static final class EpollEventLoopGroup extends MultithreadEventLoopGroup {
+
+		EpollEventLoopGroup(int nThreads, ThreadFactory threadFactory, IoHandlerFactory ioHandlerFactory) {
+			super(nThreads, threadFactory, ioHandlerFactory);
 		}
 	}
 }
