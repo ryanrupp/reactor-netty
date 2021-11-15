@@ -108,28 +108,6 @@ class ChannelOperationsHandlerTest extends BaseHttpTest {
 		assertThat(counter.get()).isEqualTo(257);
 	}
 
-	//@Test
-	//public void keepPrefetchSizeConstantEqualsWriteBufferLowHighWaterMark() {
-	//	doTestPrefetchSize(1024, 1024);
-	//}
-	//
-	//@Test
-	//public void keepPrefetchSizeConstantDifferentWriteBufferLowHighWaterMark() {
-	//	doTestPrefetchSize(0, 1024);
-	//}
-	//
-	//private void doTestPrefetchSize(int writeBufferLowWaterMark, int writeBufferHighWaterMark) {
-	//	EmbeddedChannel channel = new EmbeddedChannel();
-	//	channel.config()
-	//	       .setWriteBufferLowWaterMark(writeBufferLowWaterMark)
-	//	       .setWriteBufferHighWaterMark(writeBufferHighWaterMark);
-	//
-	//	StepVerifier.create(FutureMono.deferFuture(() -> channel.writeAndFlush(MonoSendMany.objectSource(Flux.range(0, 70), channel, null))))
-	//	            .expectComplete()
-	//	            .verify(Duration.ofSeconds(30));
-	//
-	//}
-
 	@Test
 	void testChannelInactiveThrowsIOException() throws Exception {
 		ExecutorService threadPool = Executors.newCachedThreadPool();

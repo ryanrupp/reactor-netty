@@ -103,7 +103,6 @@ import reactor.netty.ChannelBindException;
 import reactor.netty.Connection;
 import reactor.netty.ConnectionObserver;
 import reactor.netty.DisposableServer;
-import reactor.netty.FutureMono;
 import reactor.netty.NettyOutbound;
 import reactor.netty.NettyPipeline;
 import reactor.netty.channel.AbortedException;
@@ -752,7 +751,7 @@ class HttpServerTests extends BaseHttpTest {
 		            .expectError(IOException.class)
 		            .verify(Duration.ofSeconds(30));
 
-		FutureMono.from(ch.get().closeFuture()).block(Duration.ofSeconds(30));
+		Mono.fromCompletionStage(ch.get().closeFuture().asStage()).block(Duration.ofSeconds(30));
 	}
 
 	@Test
@@ -1769,9 +1768,9 @@ class HttpServerTests extends BaseHttpTest {
 
 		assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 
-		FutureMono.from(group.close())
-		          .then(loop.disposeLater())
-		          .block(Duration.ofSeconds(30));
+		Mono.fromCompletionStage(group.close().asStage())
+		    .then(loop.disposeLater())
+		    .block(Duration.ofSeconds(30));
 	}
 
 	@Test
@@ -1787,9 +1786,9 @@ class HttpServerTests extends BaseHttpTest {
 
 		assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
 
-		FutureMono.from(group.close())
-		          .then(loop.disposeLater())
-		          .block(Duration.ofSeconds(30));
+		Mono.fromCompletionStage(group.close().asStage())
+		    .then(loop.disposeLater())
+		    .block(Duration.ofSeconds(30));
 	}
 
 	private void doTestTcpConfiguration(HttpServer server, HttpClient client) {

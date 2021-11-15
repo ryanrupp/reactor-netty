@@ -27,7 +27,6 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 import reactor.netty.Connection;
 import reactor.netty.ConnectionObserver;
-import reactor.netty.FutureMono;
 import reactor.netty.NettyOutbound;
 import reactor.netty.ReactorNetty;
 import reactor.netty.channel.AbortedException;
@@ -85,9 +84,9 @@ class QuicStreamOperations extends ChannelOperations<QuicInbound, QuicOutbound> 
 			return then(((Mono<ByteBuf>) dataStream)
 					.flatMap(m -> {
 						if (markFinSent()) {
-							return FutureMono.from(channel().writeAndFlush(new DefaultQuicStreamFrame(m, true)));
+							return Mono.fromCompletionStage(channel().writeAndFlush(new DefaultQuicStreamFrame(m, true)).asStage());
 						}
-						return FutureMono.from(channel().writeAndFlush(m));
+						return Mono.fromCompletionStage(channel().writeAndFlush(m).asStage());
 					})
 					.doOnDiscard(ByteBuf.class, ByteBuf::release));
 		}
@@ -105,11 +104,11 @@ class QuicStreamOperations extends ChannelOperations<QuicInbound, QuicOutbound> 
 		}
 		ByteBuf buffer = (ByteBuf) message;
 		return then(
-				FutureMono.deferFuture(() -> {
+				Mono.fromCompletionStage(() -> {
 					if (markFinSent()) {
-						return connection().channel().writeAndFlush(new DefaultQuicStreamFrame(buffer, true));
+						return connection().channel().writeAndFlush(new DefaultQuicStreamFrame(buffer, true)).asStage();
 					}
-					return connection().channel().writeAndFlush(buffer);
+					return connection().channel().writeAndFlush(buffer).asStage();
 				}),
 				() -> ReactorNetty.safeRelease(buffer));
 	}

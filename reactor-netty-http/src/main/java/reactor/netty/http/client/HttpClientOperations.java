@@ -75,7 +75,6 @@ import reactor.core.publisher.Operators;
 import reactor.core.publisher.Sinks;
 import reactor.netty.Connection;
 import reactor.netty.ConnectionObserver;
-import reactor.netty.FutureMono;
 import reactor.netty.NettyInbound;
 import reactor.netty.NettyOutbound;
 import reactor.netty.NettyPipeline;
@@ -405,7 +404,7 @@ class HttpClientOperations extends HttpOperations<NettyInbound, NettyOutbound>
 			                .flatMap(list -> {
 				                if (markSentHeaderAndBody(list.toArray())) {
 					                if (list.isEmpty()) {
-						                return FutureMono.from(channel().writeAndFlush(newFullBodyMessage(Unpooled.EMPTY_BUFFER)));
+						                return Mono.fromCompletionStage(channel().writeAndFlush(newFullBodyMessage(Unpooled.EMPTY_BUFFER)).asStage());
 					                }
 
 					                ByteBuf output;
@@ -424,10 +423,10 @@ class HttpClientOperations extends HttpOperations<NettyInbound, NettyOutbound>
 					                }
 
 					                if (output.readableBytes() > 0) {
-						                return FutureMono.from(channel().writeAndFlush(newFullBodyMessage(output)));
+						                return Mono.fromCompletionStage(channel().writeAndFlush(newFullBodyMessage(output)).asStage());
 					                }
 					                output.release();
-					                return FutureMono.from(channel().writeAndFlush(newFullBodyMessage(Unpooled.EMPTY_BUFFER)));
+					                return Mono.fromCompletionStage(channel().writeAndFlush(newFullBodyMessage(Unpooled.EMPTY_BUFFER)).asStage());
 				                }
 				                for (ByteBuf bb : list) {
 				                	if (log.isDebugEnabled()) {
@@ -759,7 +758,7 @@ class HttpClientOperations extends HttpOperations<NettyInbound, NettyOutbound>
 		}
 		if (markSentHeaderAndBody()) {
 			HttpMessage request = newFullBodyMessage(Unpooled.EMPTY_BUFFER);
-			return FutureMono.deferFuture(() -> channel().writeAndFlush(request));
+			return Mono.fromCompletionStage(() -> channel().writeAndFlush(request).asStage());
 		}
 		else {
 			return Mono.empty();
@@ -905,10 +904,10 @@ class HttpClientOperations extends HttpOperations<NettyInbound, NettyOutbound>
 				}
 				else {
 					if (progressCallback != null) {
-						progressCallback.accept(FutureMono.from(f)
-						                                  .cast(Long.class)
-						                                  .switchIfEmpty(Mono.just(encoder.length()))
-						                                  .flux());
+						progressCallback.accept(Mono.fromCompletionStage(f.asStage())
+						                            .cast(Long.class)
+						                            .switchIfEmpty(Mono.just(encoder.length()))
+						                            .flux());
 					}
 				}
 				s.onComplete();
