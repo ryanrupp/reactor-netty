@@ -34,11 +34,12 @@ import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.unix.DomainSocketAddress;
 import io.netty.handler.codec.DecoderException;
 import io.netty.util.AttributeKey;
-import io.netty.util.concurrent.FutureListener;
+import io.netty.util.concurrent.Promise;
 import org.reactivestreams.Subscription;
 import reactor.core.CoreSubscriber;
 import reactor.core.publisher.Mono;
@@ -372,20 +373,16 @@ public abstract class ServerTransport<T extends ServerTransport<T, CONF>,
 		public void channelRead(ChannelHandlerContext ctx, Object msg) {
 			final Channel child = (Channel) msg;
 
-			child.pipeline().addLast(childHandler);
-
-			TransportConnector.setChannelOptions(child, childOptions, isDomainSocket);
-			TransportConnector.setAttributes(child, childAttrs);
-
-			try {
-				childGroup.register(child).addListener((FutureListener<Void>) future -> {
-					if (!future.isSuccess()) {
-						forceClose(child, future.cause());
-					}
-				});
-			}
-			catch (Throwable t) {
-				forceClose(child, t);
+			EventLoop childEventLoop = child.executor();
+			// Ensure we always execute on the child EventLoop.
+			if (childEventLoop.inEventLoop()) {
+				initChild(child);
+			} else {
+				try {
+					childEventLoop.execute(() -> initChild(child));
+				} catch (Throwable cause) {
+					forceClose(child, cause);
+				}
 			}
 		}
 
@@ -410,6 +407,24 @@ public abstract class ServerTransport<T extends ServerTransport<T, CONF>,
 			ctx.fireExceptionCaught(cause);
 		}
 
+		void initChild(final Channel child) {
+			try {
+				TransportConnector.setChannelOptions(child, childOptions, isDomainSocket);
+				TransportConnector.setAttributes(child, childAttrs);
+
+				child.pipeline().addLast(childHandler);
+
+				child.register().addListener(future -> {
+					if (!future.isSuccess()) {
+						forceClose(child, future.cause());
+					}
+				});
+			}
+			catch (Throwable t) {
+				forceClose(child, t);
+			}
+		}
+
 		void enableAutoReadTask(Channel channel) {
 
 			// Task which is scheduled to re-enable auto-read.
@@ -430,13 +445,18 @@ public abstract class ServerTransport<T extends ServerTransport<T, CONF>,
 
 		final Acceptor acceptor;
 
+		Promise<Channel> promise;
+
 		AcceptorInitializer(Acceptor acceptor) {
 			this.acceptor = acceptor;
 		}
 
 		@Override
 		public void initChannel(final Channel ch) {
-			ch.executor().execute(() -> ch.pipeline().addLast(acceptor));
+			ch.executor().execute(() -> {
+				ch.pipeline().addLast(acceptor);
+				promise.setSuccess(ch);
+			});
 		}
 	}
 
