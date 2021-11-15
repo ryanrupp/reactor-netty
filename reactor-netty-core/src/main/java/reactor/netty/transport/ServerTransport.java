@@ -377,10 +377,12 @@ public abstract class ServerTransport<T extends ServerTransport<T, CONF>,
 			// Ensure we always execute on the child EventLoop.
 			if (childEventLoop.inEventLoop()) {
 				initChild(child);
-			} else {
+			}
+			else {
 				try {
 					childEventLoop.execute(() -> initChild(child));
-				} catch (Throwable cause) {
+				}
+				catch (Throwable cause) {
 					forceClose(child, cause);
 				}
 			}

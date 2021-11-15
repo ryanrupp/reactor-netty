@@ -245,7 +245,8 @@ public final class TransportConnector {
 					promise.asFuture().addListener(future -> {
 						if (future.isSuccess()) {
 							channel.register().addListener(listener);
-						} else {
+						}
+						else {
 							channel.unsafe().closeForcibly();
 							listener.tryFailure(future.cause());
 						}
