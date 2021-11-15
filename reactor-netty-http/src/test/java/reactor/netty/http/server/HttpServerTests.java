@@ -86,8 +86,8 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
-import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import io.netty.util.concurrent.SingleThreadEventExecutor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -1631,7 +1631,7 @@ class HttpServerTests extends BaseHttpTest {
 				          })
 				          // Register a channel group, when invoking disposeNow()
 				          // the implementation will wait for the active requests to finish
-				          .channelGroup(new DefaultChannelGroup(new DefaultEventExecutor()))
+				          .channelGroup(new DefaultChannelGroup(new SingleThreadEventExecutor()))
 				          .route(r -> r.get("/delay500", (req, res) -> res.sendString(Mono.just("delay500")
 				                                                          .delayElement(Duration.ofMillis(500))))
 				                       .get("/delay1000", (req, res) -> res.sendString(Mono.just("delay1000")

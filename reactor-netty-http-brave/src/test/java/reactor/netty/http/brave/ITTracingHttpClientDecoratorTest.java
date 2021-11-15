@@ -23,8 +23,8 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.EventExecutor;
+import io.netty.util.concurrent.SingleThreadEventExecutor;
 import org.junit.AfterClass;
 import org.junit.Test;
 import reactor.core.publisher.Mono;
@@ -47,7 +47,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 public class ITTracingHttpClientDecoratorTest extends ITHttpAsyncClient<HttpClient> {
 	private ChannelGroup group;
-	private static final EventExecutor executor = new DefaultEventExecutor();
+	private static final EventExecutor executor = new SingleThreadEventExecutor();
 
 	@AfterClass
 	public static void afterClass() throws Exception {

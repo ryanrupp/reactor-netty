@@ -18,8 +18,8 @@ package reactor.netty.http.brave;
 import brave.test.http.ITHttpServer;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.EventExecutor;
+import io.netty.util.concurrent.SingleThreadEventExecutor;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Ignore;
@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ITTracingHttpServerDecoratorTest extends ITHttpServer {
 	private DisposableServer disposableServer;
 	private ChannelGroup group;
-	private static final EventExecutor executor = new DefaultEventExecutor();
+	private static final EventExecutor executor = new SingleThreadEventExecutor();
 
 	@AfterClass
 	public static void afterClass() throws Exception {
