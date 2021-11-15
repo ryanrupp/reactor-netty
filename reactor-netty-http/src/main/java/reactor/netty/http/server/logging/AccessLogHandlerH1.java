@@ -19,12 +19,12 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufHolder;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.util.concurrent.Future;
 import reactor.netty.channel.ChannelOperations;
 import reactor.netty.http.HttpInfos;
 import reactor.util.annotation.Nullable;
@@ -60,15 +60,14 @@ final class AccessLogHandlerH1 extends BaseAccessLogHandler {
 
 	@Override
 	@SuppressWarnings("FutureReturnValueIgnored")
-	public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
+	public Future<Void> write(ChannelHandlerContext ctx, Object msg) {
 		if (msg instanceof HttpResponse) {
 			final HttpResponse response = (HttpResponse) msg;
 			final HttpResponseStatus status = response.status();
 
 			if (status.equals(HttpResponseStatus.CONTINUE)) {
 				//"FutureReturnValueIgnored" this is deliberate
-				ctx.write(msg, promise);
-				return;
+				return ctx.write(msg);
 			}
 
 			final boolean chunked = HttpUtil.isTransferEncodingChunked(response);
@@ -85,17 +84,16 @@ final class AccessLogHandlerH1 extends BaseAccessLogHandler {
 		}
 		if (msg instanceof LastHttpContent) {
 			accessLogArgProvider.increaseContentLength(((LastHttpContent) msg).content().readableBytes());
-			ctx.write(msg, promise.unvoid())
-			   .addListener(future -> {
-			       if (future.isSuccess()) {
-				       AccessLog log = accessLog.apply(accessLogArgProvider);
-				       if (log != null) {
-					       log.log();
-				       }
-				       accessLogArgProvider.clear();
-			       }
-			   });
-			return;
+			return ctx.write(msg)
+			          .addListener(future -> {
+			              if (future.isSuccess()) {
+			                  AccessLog log = accessLog.apply(accessLogArgProvider);
+			                  if (log != null) {
+			                      log.log();
+			                  }
+			                  accessLogArgProvider.clear();
+			              }
+			          });
 		}
 		if (msg instanceof ByteBuf) {
 			accessLogArgProvider.increaseContentLength(((ByteBuf) msg).readableBytes());
@@ -104,6 +102,6 @@ final class AccessLogHandlerH1 extends BaseAccessLogHandler {
 			accessLogArgProvider.increaseContentLength(((ByteBufHolder) msg).content().readableBytes());
 		}
 		//"FutureReturnValueIgnored" this is deliberate
-		ctx.write(msg, promise);
+		return ctx.write(msg);
 	}
 }

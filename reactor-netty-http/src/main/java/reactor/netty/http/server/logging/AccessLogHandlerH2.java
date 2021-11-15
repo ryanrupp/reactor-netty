@@ -17,9 +17,9 @@ package reactor.netty.http.server.logging;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
+import io.netty.util.concurrent.Future;
 import reactor.netty.channel.ChannelOperations;
 import reactor.netty.http.HttpInfos;
 import reactor.util.annotation.Nullable;
@@ -55,7 +55,7 @@ final class AccessLogHandlerH2 extends BaseAccessLogHandler {
 
 	@Override
 	@SuppressWarnings("FutureReturnValueIgnored")
-	public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
+	public Future<Void> write(ChannelHandlerContext ctx, Object msg) {
 		boolean lastContent = false;
 		if (msg instanceof Http2HeadersFrame) {
 			final Http2HeadersFrame responseHeaders = (Http2HeadersFrame) msg;
@@ -76,19 +76,18 @@ final class AccessLogHandlerH2 extends BaseAccessLogHandler {
 			accessLogArgProvider.increaseContentLength(data.content().readableBytes());
 		}
 		if (lastContent) {
-			ctx.write(msg, promise.unvoid())
-			   .addListener(future -> {
-			       if (future.isSuccess()) {
-				       AccessLog log = accessLog.apply(accessLogArgProvider);
-				       if (log != null) {
-					       log.log();
-				       }
-				       accessLogArgProvider.clear();
-			       }
-			   });
-			return;
+			return ctx.write(msg)
+			          .addListener(future -> {
+			              if (future.isSuccess()) {
+			                  AccessLog log = accessLog.apply(accessLogArgProvider);
+			                  if (log != null) {
+			                      log.log();
+			                  }
+			                  accessLogArgProvider.clear();
+			              }
+			          });
 		}
 		//"FutureReturnValueIgnored" this is deliberate
-		ctx.write(msg, promise);
+		return ctx.write(msg);
 	}
 }

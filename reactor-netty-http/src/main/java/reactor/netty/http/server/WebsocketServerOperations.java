@@ -21,7 +21,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListeners;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
@@ -34,6 +33,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketCloseStatus;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
+import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.FutureListener;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
@@ -59,7 +59,7 @@ final class WebsocketServerOperations extends HttpServerOperations
 		implements WebsocketInbound, WebsocketOutbound {
 
 	final WebSocketServerHandshaker           handshaker;
-	final ChannelPromise                      handshakerResult;
+	final Future<Void>                        handshakerResult;
 	final Sinks.One<WebSocketCloseStatus>     onCloseState;
 	final boolean                             proxyPing;
 
@@ -87,7 +87,6 @@ final class WebsocketServerOperations extends HttpServerOperations
 			removeHandler(NettyPipeline.AccessLogHandler);
 			removeHandler(NettyPipeline.HttpMetricsHandler);
 
-			handshakerResult = channel.newPromise();
 			HttpRequest request = new DefaultFullHttpRequest(replaced.version(),
 					replaced.method(),
 					replaced.uri());
@@ -112,19 +111,19 @@ final class WebsocketServerOperations extends HttpServerOperations
 				}
 			}
 
-			handshaker.handshake(channel,
-			                     request,
-			                     replaced.responseHeaders
-			                             .remove(HttpHeaderNames.TRANSFER_ENCODING),
-			                     handshakerResult)
-			          .addListener(f -> {
-			              if (replaced.rebind(this)) {
-			                  markPersistent(false);
-			              }
-			              else {
-			                  log.debug(format(channel, "Cannot bind WebsocketServerOperations after the handshake."));
-			              }
-			          });
+			handshakerResult =
+			        handshaker.handshake(channel,
+			                      request,
+			                      replaced.responseHeaders
+			                              .remove(HttpHeaderNames.TRANSFER_ENCODING))
+			                  .addListener(f -> {
+			                      if (replaced.rebind(this)) {
+			                          markPersistent(false);
+			                      }
+			                      else {
+			                          log.debug(format(channel, "Cannot bind WebsocketServerOperations after the handshake."));
+			                      }
+			                  });
 		}
 	}
 
