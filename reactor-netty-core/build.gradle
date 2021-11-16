@@ -191,6 +191,38 @@ task japicmp(type: JapicmpTask) {
 	ignoreMissingClasses = true
 	includeSynthetic = true
 	onlyIf { "$compatibleVersion" != "SKIP" }
+	methodExcludes = [
+			// methods with default implementation
+			"reactor.netty.resources.LoopResources#onChannel(java.lang.Class, io.netty.channel.EventLoop)",
+			"reactor.netty.resources.LoopResources#onServerChannel(java.lang.Class, io.netty.channel.EventLoop, io.netty.channel.EventLoopGroup)",
+
+			// change in Netty's ChannelHandler
+			"reactor.netty.NettyPipeline#inboundHandler(java.util.function.BiConsumer)",
+			"reactor.netty.channel.AbstractChannelMetricsHandler#write(io.netty.channel.ChannelHandlerContext, java.lang.Object, io.netty.channel.ChannelPromise)",
+
+			// removed methods
+			"reactor.netty.Connection#addHandler(io.netty.channel.ChannelHandler)",
+			"reactor.netty.Connection#addHandler(java.lang.String, io.netty.channel.ChannelHandler)",
+			"reactor.netty.resources.LoopResources#onChannel(java.lang.Class, io.netty.channel.EventLoopGroup)",
+			"reactor.netty.resources.LoopResources#onChannelClass(java.lang.Class, io.netty.channel.EventLoopGroup)",
+			"reactor.netty.tcp.TcpClient#bootstrap(java.util.function.Function)",
+			"reactor.netty.tcp.TcpResources#onChannel(java.lang.Class, io.netty.channel.EventLoopGroup)",
+			"reactor.netty.tcp.TcpResources#onChannelClass(java.lang.Class, io.netty.channel.EventLoopGroup)",
+			"reactor.netty.udp.UdpResources#onChannel(java.lang.Class, io.netty.channel.EventLoopGroup)",
+			"reactor.netty.udp.UdpResources#onChannelClass(java.lang.Class, io.netty.channel.EventLoopGroup)"
+	]
+	classExcludes = [
+			// not needed anymore Future.asStage() is used in combination with Mono.fromCompletableStage()
+			"reactor.netty.FutureMono",
+
+			// CLASS FILE FORMAT VERSION: 55.0 <- 52.0
+			"reactor.netty.tcp.TcpClientConfig",
+			"reactor.netty.tcp.TcpServerConfig",
+			"reactor.netty.transport.ClientTransportConfig",
+			"reactor.netty.transport.ServerTransportConfig",
+			"reactor.netty.udp.UdpClientConfig",
+			"reactor.netty.udp.UdpServerConfig"
+	]
 }
 
 tasks.japicmp.dependsOn(downloadBaseline)
