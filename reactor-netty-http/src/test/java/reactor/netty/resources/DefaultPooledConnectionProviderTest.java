@@ -301,17 +301,20 @@ class DefaultPooledConnectionProviderTest extends BaseHttpTest {
 				        .bindNow();
 
 		int requestsNum = 10;
-		int connNum = 5;
-		CountDownLatch latch = new CountDownLatch(requestsNum + connNum);
+		CountDownLatch latch = new CountDownLatch(requestsNum + 1);
 		DefaultPooledConnectionProvider provider =
-				(DefaultPooledConnectionProvider) ConnectionProvider.create("testConnectionReturnedToParentPoolWhenNoActiveStreams", connNum);
+				(DefaultPooledConnectionProvider) ConnectionProvider.create("testConnectionReturnedToParentPoolWhenNoActiveStreams", 5);
+		AtomicInteger counter = new AtomicInteger();
 		HttpClient client =
 				createClient(provider, disposableServer.port())
 				        .protocol(HttpProtocol.H2)
 				        .secure(spec -> spec.sslContext(clientCtx))
 				        .doOnResponse((res, conn) -> conn.onDispose(latch::countDown))
 				        .observe((conn, state) -> {
-				            if (state == ConnectionObserver.State.RELEASED) {
+				            if (state == ConnectionObserver.State.CONNECTED) {
+				                counter.incrementAndGet();
+				            }
+				            if (state == ConnectionObserver.State.RELEASED && counter.decrementAndGet() == 0) {
 				                latch.countDown();
 				            }
 				        });
