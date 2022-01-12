@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macos-10.15, windows-2019]
+        os: [windows-2019]
         transport: [native, nio]
         exclude:
           # excludes native on Windows (there's none)
@@ -31,3 +31,9 @@ jobs:
         run: ./gradlew clean spotlessCheck -PspotlessFrom='origin/${{ github.base_ref }}'
       - name: Build with Gradle
         run: ./gradlew clean check --no-daemon -PforceTransport=${{ matrix.transport }}
+      - name: Archive tests output
+        if: failure()
+        uses: actions/upload-artifact@v1
+        with:
+          name: tests_output_${{ matrix.os }}_${{ matrix.transport }}
+          path: reactor-netty-http/build/test-results/test/binary/output.bin
