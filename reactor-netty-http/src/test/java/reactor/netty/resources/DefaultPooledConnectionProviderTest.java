@@ -301,14 +301,20 @@ class DefaultPooledConnectionProviderTest extends BaseHttpTest {
 				        .bindNow();
 
 		int requestsNum = 10;
-		CountDownLatch latch = new CountDownLatch(requestsNum);
+		int connNum = 5;
+		CountDownLatch latch = new CountDownLatch(requestsNum + connNum);
 		DefaultPooledConnectionProvider provider =
-				(DefaultPooledConnectionProvider) ConnectionProvider.create("testConnectionReturnedToParentPoolWhenNoActiveStreams", 5);
+				(DefaultPooledConnectionProvider) ConnectionProvider.create("testConnectionReturnedToParentPoolWhenNoActiveStreams", connNum);
 		HttpClient client =
 				createClient(provider, disposableServer.port())
 				        .protocol(HttpProtocol.H2)
 				        .secure(spec -> spec.sslContext(clientCtx))
-				        .doOnResponse((res, conn) -> conn.onDispose(latch::countDown));
+				        .doOnResponse((res, conn) -> conn.onDispose(latch::countDown))
+				        .observe((conn, state) -> {
+				            if (state == ConnectionObserver.State.RELEASED) {
+				                latch.countDown();
+				            }
+				        });
 
 		try {
 			Flux.range(0, requestsNum)
@@ -324,8 +330,6 @@ class DefaultPooledConnectionProviderTest extends BaseHttpTest {
 			assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
 
 			assertThat(provider.channelPools).hasSize(1);
-
-			Thread.sleep(1000);
 
 			@SuppressWarnings({"unchecked", "rawtypes"})
 			InstrumentedPool<DefaultPooledConnectionProvider.PooledConnection> channelPool =

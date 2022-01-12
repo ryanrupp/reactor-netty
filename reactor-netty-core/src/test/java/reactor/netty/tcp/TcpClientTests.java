@@ -1166,7 +1166,7 @@ public class TcpClientTests {
 				             b.attr(AttributeKey.valueOf("testBootstrap"), "testBootstrap")
 				              .group(new NioEventLoopGroup())
 				              .option(ChannelOption.valueOf("testBootstrap"), "testBootstrap")
-				              .remoteAddress(server.address())
+				              .remoteAddress(new InetSocketAddress("localhost", server.port()))
 				              .resolver(DefaultAddressResolverGroup.INSTANCE)
 				              .handler(new ChannelInboundHandlerAdapter() {
 				                  @Override
