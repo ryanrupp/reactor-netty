@@ -301,7 +301,7 @@ class DefaultPooledConnectionProviderTest extends BaseHttpTest {
 				        .bindNow();
 
 		int requestsNum = 10;
-		CountDownLatch latch = new CountDownLatch(requestsNum + 1);
+		CountDownLatch latch = new CountDownLatch(1);
 		DefaultPooledConnectionProvider provider =
 				(DefaultPooledConnectionProvider) ConnectionProvider.create("testConnectionReturnedToParentPoolWhenNoActiveStreams", 5);
 		AtomicInteger counter = new AtomicInteger();
@@ -309,7 +309,6 @@ class DefaultPooledConnectionProviderTest extends BaseHttpTest {
 				createClient(provider, disposableServer.port())
 				        .protocol(HttpProtocol.H2)
 				        .secure(spec -> spec.sslContext(clientCtx))
-				        .doOnResponse((res, conn) -> conn.onDispose(latch::countDown))
 				        .observe((conn, state) -> {
 				            if (state == ConnectionObserver.State.CONNECTED) {
 				                counter.incrementAndGet();
